@@ -3,7 +3,7 @@ Xiaomi Pad 6 Build releases
 
 <h2>Installation Guide</h1>
 <div>
-<h3>NOTE: Make sure to use HyperOS Global or China based on Android 15 Firmware, don't try to run this ROM with Miui Firmware</h2>
+<h3>NOTE: Make sure to use HyperOS Global or China based on Android 14 Firmware, don't try to run this ROM with Miui Firmware</h2>
   <ol>
     <li>Download the rom package along with boot,dtbo and vendor_boot(links mentioned in post)</li>
     <li>Put downloaded files in a folder(your platform tools folder preferred)</li>
