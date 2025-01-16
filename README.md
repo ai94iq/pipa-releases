@@ -43,6 +43,7 @@ Xiaomi Pad 6 Build releases
 <li>Google Apps for A14:  <a href="https://github.com/MindTheGapps/14.0.0-arm64/releases">Here</a></li>
 <li>Google Apps for A15:  <a href="https://github.com/MindTheGapps/15.0.0-arm64/releases">Here</a></li>
 <li>Magisk:  <a href="https://github.com/topjohnwu/magisk/releases">Here</a></li>
+<li>microG Installer:  <a href="https://github.com/nift4/microg_installer_revived">Here</a></li>
 
 <div>
 </div>
