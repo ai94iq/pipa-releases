@@ -1,0 +1,10 @@
+# Image files
+*.img
+
+
+# ROM files
+*.zip
+*.zip.sha256sum
+
+# Temporary files
+*.tmp
