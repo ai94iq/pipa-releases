@@ -76,8 +76,9 @@ Remarks:
 
 NOTE:
 * Make sure to use **HyperOS Global** or **China** based on Android 14 Firmware, don't try to run this ROM with Miui Firmware
+* The bootloader needs to be unlocked first. For instructions see [here](https://xdaforums.com/t/how-to-unlock-bootloader-on-xiaomi-hyperos-all-devices.4654009/)
 
-## Guid
+## Guide
 * Install fastboot and adb on your system
 * Download the rom package along with boot, dtbo and vendor_boot (links mentioned in post)
 * Put downloaded files in a folder(your platform tools folder preferred)
@@ -88,12 +89,12 @@ NOTE:
     fastboot flash boot boot.img
     ```
 
-    Flash the (device tree blob overlay)[https://source.android.com/docs/core/architecture/dto]
+    Flash the [device tree blob overlay](https://source.android.com/docs/core/architecture/dto)
     ```sh
     fastboot flash dtbo dtbo.img
     ```
 
-    Flash the (vendor boot partitions)[https://source.android.com/docs/core/architecture/partitions/vendor-boot-partitions]
+    Flash the [vendor boot partitions](https://source.android.com/docs/core/architecture/partitions/vendor-boot-partitions)
     ```sh
     fastboot flash vendor_boot vendor_boot.img
     ```
@@ -145,8 +146,11 @@ microG Installer: [here](https://github.com/FriendlyNeighborhoodShane/MinMicroG-
 
 FAQ: 
 * Q: Will I loose data when upgrading to new release? 
+    
     A: You never really know, so do a backup first. Usually the data storage should persist while upgrade
 * Q: Do I need to reinstall gapps when upgrading? 
+    
     A: If you upgrade from one to an other android version you need to reflash the right version of gapps.
 * Q: My device is stuck in fastboot mode (green start written on the top of the screen) and I am unable to boot into recovery nor boot. What can I do? 
+    
     A: Download the global or china HyperOS version for fastboot and flash the device and then try again. 
