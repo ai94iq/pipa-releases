@@ -83,6 +83,21 @@ def find_files_by_extension(extensions):
         files.extend(list(Path(".").glob(f"*.{ext}")))
     return files
 
+def get_matching_sha(zip_file, sha_files):
+    """Get matching SHA256 file for a ZIP file if it exists."""
+    sha_path = Path(f"{zip_file}.sha256sum")
+    return sha_path if sha_path in sha_files else None
+
+def add_sha_files(files_to_release, zip_files, sha_files):
+    """Add matching SHA files for ZIPs to the release list."""
+    result = files_to_release.copy()
+    for zip_file in zip_files:
+        if zip_file in files_to_release:  # Only if ZIP is selected
+            sha_file = get_matching_sha(zip_file, sha_files)
+            if sha_file:
+                result.append(sha_file)
+    return result
+
 def interactive_mode():
     """Run the script in fully interactive mode with a menu interface."""
     print("=======================================================")
@@ -92,6 +107,7 @@ def interactive_mode():
     # Check for files to release
     zip_files = find_files_by_extension(["zip"])
     img_files = find_files_by_extension(["img"])
+    sha_files = find_files_by_extension(["sha256sum"])
     
     if not (zip_files or img_files):
         print("Error: No .img or .zip files found for release")
@@ -164,7 +180,7 @@ def interactive_mode():
     elif choice == "3":
         files_to_release = zip_files
     elif choice == "4":
-        # Individual file selection
+        # Individual file selection (show only ZIP and IMG files)
         print("\nSelect files to include (comma-separated numbers, e.g. 1,3,5):")
         all_files = []
         if zip_files:
@@ -190,6 +206,9 @@ def interactive_mode():
             print("Invalid input. Using all files.")
             files_to_release = zip_files + img_files
     
+    # Add matching SHA files for selected ZIPs
+    files_to_release = add_sha_files(files_to_release, zip_files, sha_files)
+    
     if not files_to_release:
         print("Error: No files selected for release")
         input("Press Enter to continue...")
@@ -204,7 +223,8 @@ def interactive_mode():
     cmd = ["gh", "release", "create", tag]
     for file in files_to_release:
         cmd.append(str(file))
-    cmd.extend(["--title", title, "--notes", notes])
+    # Change the order of title and notes in the command
+    cmd.extend(["--notes", notes, "--title", title])
     
     # Show final command
     print("\nFinal command to be executed:")
@@ -247,7 +267,7 @@ def create_release_with_progress(cmd, files_to_release):
     overall_start_time = time.time()
     
     # Create the release without files first
-    create_cmd = ["gh", "release", "create", cmd[3], "--title", cmd[-1], "--notes", cmd[-3]]
+    create_cmd = ["gh", "release", "create", cmd[3], "--notes", cmd[-1], "--title", cmd[-3]]
     print("\nCreating empty release...", end="")
     result, exit_code = run_command(create_cmd, check=False)
     
@@ -424,6 +444,7 @@ def main():
     # Check for files to release
     zip_files = find_files_by_extension(["zip"])
     img_files = find_files_by_extension(["img"])
+    sha_files = find_files_by_extension(["sha256sum"])
     
     if not (zip_files or img_files):
         print("Error: No .img or .zip files found for release")
@@ -458,14 +479,15 @@ def main():
         notes = "- Auto-generated release"
     
     # Determine which files to release
-    files_to_release = []
-    
     if args.img:
         files_to_release = img_files
     elif args.zip:
         files_to_release = zip_files
     else:  # --all or default
         files_to_release = zip_files + img_files
+    
+    # Add matching SHA files for ZIPs
+    files_to_release = add_sha_files(files_to_release, zip_files, sha_files)
     
     if not files_to_release:
         print("Error: No matching files found for selected option")
@@ -475,7 +497,8 @@ def main():
     cmd = ["gh", "release", "create", tag]
     for file in files_to_release:
         cmd.append(str(file))
-    cmd.extend(["--title", title, "--notes", notes])
+    # Change the order of title and notes in the command
+    cmd.extend(["--notes", notes, "--title", title])
     
     # Show final command
     print("\nFinal command to be executed:")
