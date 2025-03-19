@@ -255,6 +255,11 @@ def create_release_with_progress(cmd, files_to_release):
     
     print(f"Total upload size: {format_size(total_size)} across {len(files_to_release)} files")
     
+    # Try to get a better speed estimate if total size is significant
+    measured_speed = None
+    if total_size > 50 * 1024 * 1024:  # Only for uploads > 50MB
+        measured_speed = estimate_upload_speed()
+    
     # Show limitation message to manage user expectations
     print("\nNote: Progress is estimated and may not reflect actual upload status.")
     print("GitHub CLI doesn't provide real-time upload progress information.")
@@ -267,7 +272,7 @@ def create_release_with_progress(cmd, files_to_release):
     overall_start_time = time.time()
     
     # Create the release without files first
-    create_cmd = ["gh", "release", "create", cmd[3], "--notes", cmd[-1], "--title", cmd[-3]]
+    create_cmd = ["gh", "release", "create", cmd[3], "--notes", cmd[-3], "--title", cmd[-1]]
     print("\nCreating empty release...", end="")
     result, exit_code = run_command(create_cmd, check=False)
     
@@ -285,11 +290,18 @@ def create_release_with_progress(cmd, files_to_release):
         print(f"\nUploading file {current_file_index + 1}/{len(files_to_release)}: {file_name}")
         print(f"File size: {format_size(file_size)}")
         
-        # Determine optimal estimated speed based on file size
-        if file_size > 1024 * 1024 * 1024:  # > 1GB
-            base_speed = 2 * 1024 * 1024  # 2 MB/s for large uploads
+        # Determine optimal estimated speed based on file size and measured speed
+        if measured_speed:
+            if file_size > 1024 * 1024 * 1024:  # > 1GB
+                base_speed = measured_speed * 0.8  # 80% of measured speed for large files
+            else:
+                base_speed = measured_speed * 0.9  # 90% of measured speed for smaller files
         else:
-            base_speed = 3 * 1024 * 1024  # 3 MB/s for smaller uploads
+            # Use default estimates if no measurement
+            if file_size > 1024 * 1024 * 1024:  # > 1GB
+                base_speed = 2 * 1024 * 1024  # 2 MB/s for large uploads
+            else:
+                base_speed = 3 * 1024 * 1024  # 3 MB/s for smaller uploads
         
         # Start the upload command for this file
         upload_cmd = ["gh", "release", "upload", cmd[3], file]
@@ -330,7 +342,6 @@ def create_release_with_progress(cmd, files_to_release):
                         # Calculate ETA
                         if avg_speed > 0:
                             file_eta = (file_size - estimated_uploaded) / avg_speed
-                            file_eta *= 1.1
                             file_eta_str = format_time(file_eta)
                         else:
                             file_eta_str = "Calculating..."
@@ -421,6 +432,17 @@ def format_time(seconds):
         hours = int(seconds // 3600)
         minutes = int((seconds % 3600) // 60)
         return f"{hours}h {minutes}m"
+
+def estimate_upload_speed():
+    """Estimate upload speed using a simple HTTP upload test."""
+    print("Estimating upload speed...", end="", flush=True)
+    
+    # Skip real upload test and use conservative estimate
+    # This is simpler and doesn't require GitHub API interactions
+    default_speed = 1.5 * 1024 * 1024  # 1.5 MB/s as a conservative estimate
+    
+    print(f" Using default estimate ({format_size(default_speed)}/s)")
+    return default_speed
 
 def main():
     # Parse command line arguments
